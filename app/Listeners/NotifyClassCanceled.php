@@ -5,8 +5,10 @@ use App\Events\ClassCanceled;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use App\Mail\ClassCanceledMail;
+use App\Notifications\ClassCanceledNotification;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 class NotifyClassCanceled
 {
     /**
@@ -22,16 +24,22 @@ class NotifyClassCanceled
      */
     public function handle(ClassCanceled $event): void
     {
-       $members = $event->scheduledClass->members();
+       $members = $event->scheduledClass->members()->get();
 
        $className = $event->scheduledClass->classType->name;
        $classDateTime = $event->scheduledClass->date_time;
 
        $details = compact('className','classDateTime');
 
-       $members->each(function($member) use ($details){
-           Mail::to($member)->send(new ClassCanceledMail($details));
-       });
+       //send mail to user
+
+    //    $members->each(function($member) use ($details){
+    //        Mail::to($member)->send(new ClassCanceledMail($details));
+    //    });
+
+     //send notification mail to user
+
+    Notification::send($members ,new ClassCanceledNotification($details));
 
        //NotifyClassCanceledJob::dispatch($members, $details);
     }
